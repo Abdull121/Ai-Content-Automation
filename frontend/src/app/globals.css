@@ -1,0 +1,419 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   HARD COPY — Printed Ops Sheet
+
+   THE LAW (settles every future argument):
+   "Every loud element is decorative and every legible element is sober.
+    No expressive treatment — rotation, gradient, animation, decorative
+    tracking — ever touches a string the operator parses under time pressure:
+    filenames, status words, counts, hours, handles, and error copy are flat,
+    unrotated, and set in ink."
+
+   This is a COMMITTED SINGLE THEME. There is no prefers-color-scheme fork and
+   no `dark` class path. Do not add one.
+   ========================================================================== */
+
+@theme {
+  /* ——— ground & ink ——— */
+  --color-paper:      #efeae0;  /* page ground, inset wells        */
+  --color-card:       #ffffff;  /* panel + tile fill               */
+  --color-ink:        #0b0b0b;  /* all borders, shadows, text      */
+  --color-muted:      #5a5a5a;  /* 6.90:1 on card, 5.75:1 on paper */
+
+  /* ——— semantic ramp (learnable in a day) ——— */
+  --color-acid:       #ccff00;  /* WORKING / primary CTA / marquee */
+  --color-volt:       #1b4dff;  /* SCHEDULED / links / focus ring  */
+  --color-amber:      #ff9500;  /* IN-FLIGHT / attention           */
+  --color-alarm:      #d10d0d;  /* FAILURE ONLY. nothing else.     */
+
+  /* ——— platform hues (rail + tag only, never status) ——— */
+  --color-yt:         #ff4d00;
+  --color-ig:         #7a1fe0;
+  --color-tt:         #00e5c9;
+
+  /* ——— type ——— */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* ——— radius: the whole system is square ——— */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* ——— hard offset shadows ——— */
+  --shadow-brut-xs:    2px 2px 0 0 #0b0b0b;
+  --shadow-brut-sm:    4px 4px 0 0 #0b0b0b;
+  --shadow-brut:       6px 6px 0 0 #0b0b0b;
+  --shadow-brut-lg:    8px 8px 0 0 #0b0b0b;
+  --shadow-brut-alarm: 4px 4px 0 0 #d10d0d;
+
+  /* ——— motion ——— */
+  --ease-press: cubic-bezier(.2, .8, .2, 1);
+}
+
+@layer base {
+  /* ============ 1. BASE ============ */
+  /* NOTE: globals.css used to set `font-family: Arial, Helvetica, sans-serif` on
+     body, silently overriding the Geist fonts wired in layout.tsx. Fixed here. */
+  html {
+    background-color: var(--color-paper);
+  }
+
+  body {
+    background-color: var(--color-paper);
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(11, 11, 11, .035) 0 1px,
+      transparent 1px 3px
+    );                                /* scanline: ground only, never over text */
+    color: var(--color-ink);
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 450;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* tabular figures everywhere mono is used, set once so nothing can reflow
+     mid-poll by omission (2/6 → 25/25 keeps its column) */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hc-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ============ 2. FOCUS — visible on everything, never removed ============ */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-volt);
+    outline-offset: 3px;
+  }
+  /* the only controls that ever sit on an ink surface use acid (16.7:1),
+     because volt-on-ink is 2.9:1 and would fail the 3:1 non-text bar */
+  .on-ink:focus-visible {
+    outline-color: var(--color-acid);
+  }
+  /* `outline: none` / `focus:outline-none` is banned repo-wide. */
+}
+
+@layer components {
+  /* ============ 3. PRESS PHYSICS ============ */
+  .brut {
+    box-shadow: var(--shadow-brut-sm);
+    transition:
+      transform 90ms var(--ease-press),
+      box-shadow 90ms var(--ease-press),
+      background-color 120ms linear,
+      border-color 120ms linear,
+      color 120ms linear;
+  }
+  .brut:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 0 var(--color-ink);
+  }
+
+  .brut-sm {
+    box-shadow: var(--shadow-brut-xs);
+    transition:
+      transform 90ms var(--ease-press),
+      box-shadow 90ms var(--ease-press),
+      background-color 120ms linear,
+      border-color 120ms linear,
+      color 120ms linear;
+  }
+  .brut-sm:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--color-ink);
+  }
+
+  /* hover lift is gated so touch never strands an element at -1px/-1px */
+  @media (hover: hover) and (pointer: fine) {
+    .brut:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-brut);
+    }
+    .brut-sm:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-brut-sm);
+    }
+  }
+
+  /* ============ 4. THE FRAME + REGISTRATION CROSSES ============ */
+  .hc-frame {
+    position: relative;
+    border: 3px solid var(--color-ink);
+    background: var(--color-card);
+    box-shadow: var(--shadow-brut-lg);
+  }
+  .hc-reg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hc-frame::before,
+  .hc-frame::after,
+  .hc-reg::before,
+  .hc-reg::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--color-ink), var(--color-ink)) center / 12px 2px no-repeat,
+      linear-gradient(var(--color-ink), var(--color-ink)) center / 2px 12px no-repeat;
+  }
+  .hc-frame::before { top: 8px; left: 8px; }
+  .hc-frame::after  { top: 8px; right: 8px; }
+  .hc-reg::before   { bottom: 8px; left: 8px; }
+  .hc-reg::after    { bottom: 8px; right: 8px; }
+
+  /* ============ 5. MARQUEE ============ */
+  .hc-marquee {
+    overflow: hidden;
+  }
+  .hc-marquee__track {
+    display: flex;
+    width: max-content;
+    animation: hc-marquee 30s linear infinite;
+  }
+  .hc-marquee:hover .hc-marquee__track,
+  .hc-marquee:focus-within .hc-marquee__track {
+    animation-play-state: paused;
+  }
+  @keyframes hc-marquee {
+    to { transform: translateX(-50%); }
+  }
+
+  /* ============ 6. STATUS MOTION (in-flight only) ============ */
+  .hc-blip > * {
+    animation: hc-blip 1.2s ease-in-out infinite;
+  }
+  .hc-blip > *:nth-child(2) { animation-delay: .2s; }
+  .hc-blip > *:nth-child(3) { animation-delay: .4s; }
+  @keyframes hc-blip {
+    0%, 100% { opacity: .25; }
+    50%      { opacity: 1; }
+  }
+
+  .hc-pulse {
+    animation: hc-pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes hc-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .35; }
+  }
+
+  /* generating_metadata row underbar */
+  .hc-scan {
+    transform-origin: left;
+    animation: hc-scan 1.6s linear infinite;
+  }
+  @keyframes hc-scan {
+    0%    { transform: scaleX(0); transform-origin: left; }
+    50%   { transform: scaleX(1); transform-origin: left; }
+    50.1% { transform: scaleX(1); transform-origin: right; }
+    100%  { transform: scaleX(0); transform-origin: right; }
+  }
+
+  /* publishing row: travelling acid segment inside the 10px platform rail */
+  .hc-rail-run {
+    background-image: linear-gradient(var(--color-acid) 0 30%, transparent 30%);
+    background-size: 100% 300%;
+    animation: hc-rail-run 1.1s linear infinite;
+  }
+  @keyframes hc-rail-run {
+    to { background-position: 0 -300%; }
+  }
+
+  /* ============ 7. ROW ARRIVAL — lands like a stamp ============ */
+  .hc-stamp-in {
+    animation: hc-stamp-in 260ms cubic-bezier(.2, .9, .25, 1) both;
+  }
+  @keyframes hc-stamp-in {
+    0%   { transform: translate(-10px, -10px) rotate(-1.5deg); opacity: 0; }
+    60%  { transform: translate(2px, 2px) rotate(.4deg); }
+    100% { transform: none; opacity: 1; }
+  }
+
+  /* ============ 8. DROPZONE DRAG SWEEP ============ */
+  .hc-dropzone--drag {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(204, 255, 0, .18) 0 10px,
+      transparent 10px 20px
+    );
+    animation: hc-drag-sweep 2s linear infinite;
+  }
+  @keyframes hc-drag-sweep {
+    to { background-position: 32px 0; }
+  }
+
+  /* ============ 9. SAVE FLASH ============ */
+  .hc-saved-flash {
+    animation: hc-saved-flash 220ms linear 1;
+  }
+  @keyframes hc-saved-flash {
+    0%, 100% { background-color: var(--color-ink);  color: var(--color-acid); }
+    50%      { background-color: var(--color-acid); color: var(--color-ink); }
+  }
+
+  /* ============ 10. INLINE MESSAGE ENTRANCE — no shake, ever ============ */
+  .hc-msg-in {
+    animation: hc-msg-in 140ms linear both;
+  }
+  @keyframes hc-msg-in {
+    from { transform: translateY(-4px); opacity: 0; }
+  }
+
+  /* ============ 11. SKELETON — flat ink block, one acid sweep ============ */
+  .hc-skeleton {
+    background-color: var(--color-card);
+    background-image: linear-gradient(
+      90deg,
+      transparent 0 38%,
+      rgba(204, 255, 0, .85) 38% 62%,
+      transparent 62% 100%
+    );
+    background-size: 260% 100%;
+    background-repeat: no-repeat;
+    animation: hc-sweep 1.4s linear infinite;
+  }
+  @keyframes hc-sweep {
+    from { background-position: 160% 0; }
+    to   { background-position: -60% 0; }
+  }
+
+  /* ============ 12. RANGE SLIDERS ============ */
+  .hc-range {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    width: 100%;
+    height: 26px;
+  }
+  .hc-range::-webkit-slider-runnable-track {
+    height: 10px;
+    background: var(--color-card);
+    border: 2px solid var(--color-ink);
+  }
+  .hc-range::-moz-range-track {
+    height: 10px;
+    background: var(--color-card);
+    border: 2px solid var(--color-ink);
+  }
+  .hc-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 0;
+    background: var(--color-acid);
+    border: 3px solid var(--color-ink);
+    box-shadow: var(--shadow-brut-sm);
+    margin-top: -9px;
+    transition:
+      box-shadow 90ms var(--ease-press),
+      transform 90ms var(--ease-press);
+  }
+  .hc-range::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 0;
+    background: var(--color-acid);
+    border: 3px solid var(--color-ink);
+    box-shadow: var(--shadow-brut-sm);
+  }
+  .hc-range:active::-webkit-slider-thumb {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 0 var(--color-ink);
+  }
+  .hc-range:active::-moz-range-thumb {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 0 var(--color-ink);
+  }
+  .hc-range--end::-webkit-slider-thumb { background: var(--color-volt); }
+  .hc-range--end::-moz-range-thumb     { background: var(--color-volt); }
+
+  /* ============ 13. SCROLL WELL ============ */
+  .hc-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink) var(--color-paper);
+  }
+  .hc-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+  .hc-scroll::-webkit-scrollbar-track {
+    background: var(--color-paper);
+    border-left: 2px solid var(--color-ink);
+  }
+  .hc-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+  }
+
+  /* ============ 14. NATIVE CONTROL RESET ============ */
+  .hc-select {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .hc-number {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .hc-number::-webkit-outer-spin-button,
+  .hc-number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* ============ 15. HATCH (invalid window fill) ============ */
+  .hc-hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--color-alarm) 0 5px,
+      var(--color-card) 5px 10px
+    );
+  }
+}
+
+/* ============ 16. REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+  .hc-marquee__track,
+  .hc-blip > *,
+  .hc-pulse,
+  .hc-scan,
+  .hc-rail-run,
+  .hc-stamp-in,
+  .hc-dropzone--drag,
+  .hc-saved-flash,
+  .hc-msg-in,
+  .hc-skeleton {
+    animation: none !important;
+  }
+  .hc-marquee__track {
+    transform: none !important;
+  }
+  /* skeleton keeps a static acid bar so "loading" is still encoded */
+  .hc-skeleton {
+    background-image: linear-gradient(90deg, var(--color-acid) 0 6px, transparent 6px);
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+  }
+}

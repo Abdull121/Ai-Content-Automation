@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Content Automation — Intro</title>
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+<div id="stage">
+  <div id="s1" class="scene"></div>
+  <div id="s2" class="scene"></div>
+  <div id="s3" class="scene"></div>
+  <div id="s4" class="scene"></div>
+  <div id="s5" class="scene"></div>
+  <div id="s6" class="scene"></div>
+  <div id="wipes" class="layer" style="z-index:50;pointer-events:none"></div>
+</div>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
+<script src="scenes12.js"></script>
+<script src="scenes3.js"></script>
+<script src="scenes4.js"></script>
+<script src="scenes56.js"></script>
+<script src="transitions.js"></script>
+<script>
+  window.READY = (async () => { await document.fonts.ready; await Promise.all([document.fonts.load('800 100px Geist'), document.fonts.load('700 20px "Geist Mono"'), document.fonts.load('500 20px Geist')]); buildAll(); seek(0); return true; })();
+  window.seek = seek;
+</script>
+</body></html>
